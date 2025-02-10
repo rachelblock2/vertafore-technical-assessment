@@ -9,7 +9,7 @@ import { router } from "expo-router";
 import { data } from "@/data/todos";
 import { View, Text } from "react-native";
 import { Checkbox } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { loadTodos, saveTodos } from "./utils/storage";
 
 type Todo = {
   id: number;
@@ -21,24 +21,11 @@ export default function todoList() {
   const [todos, setTodos] = useState<Todo[]>([]);
 
   useEffect(() => {
-    const loadTodos = async () => {
-      try {
-        const storedTodos = await AsyncStorage.getItem("todos");
-        if (storedTodos) {
-          setTodos(JSON.parse(storedTodos)); // Use stored todos if stored
-        } else {
-          setTodos(data.sort((a, b) => b.id - a.id)); // Use app created data if no stored data
-        }
-      } catch (error) {
-        console.error("Error loading todos:", error);
-      }
-    };
-
-    loadTodos();
+    loadTodos(setTodos, data);
   }, []);
 
   useEffect(() => {
-    saveTodos();
+    saveTodos(todos);
   }, [todos]);
 
   const goToHome = () => {
@@ -56,15 +43,6 @@ export default function todoList() {
         }
       })
     );
-  };
-
-  const saveTodos = async () => {
-    try {
-      const jsonValue = JSON.stringify(todos);
-      await AsyncStorage.setItem("todos", jsonValue);
-    } catch (error) {
-      console.error("Error saving todos:", error);
-    }
   };
 
   return (
